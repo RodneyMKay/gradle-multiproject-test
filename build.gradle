@@ -1,0 +1,81 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+
+plugins {
+    id 'base'
+    id 'com.github.johnrengelman.shadow' version '5.1.0'
+}
+
+group 'me.jangroen'
+version '1.0-SNAPSHOT'
+
+subprojects {
+    group rootProject.group
+    version rootProject.version
+
+    apply plugin: "java"
+
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
+}
+
+// Define custom configurations
+configurations {
+    api { transitive true }
+    general { transitive true }
+
+    general.extendsFrom(api)
+}
+
+// Custom build tasks
+task all(type: GradleBuild) {
+    group 'build'
+    description 'Executes build tasks for api and general use'
+    tasks = ['assembleApi', 'assembleGeneral']
+}
+
+task assembleApi(type: ShadowJar) {
+    group 'build'
+    description 'Builds all the API modules and copys them into one api jar'
+    classifier 'api'
+
+    configurations = [project.configurations.api]
+    exclude('META-INF/INDEX.LIST', 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA')
+}
+
+task assembleGeneral(type: ShadowJar) {
+    group 'build'
+    description 'Builds all modules and copys them into one jar'
+    classifier 'general'
+
+    configurations = [project.configurations.general]
+    exclude('META-INF/INDEX.LIST', 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA')
+}
+
+// Register projects for inclusion in main jars
+dependencies {
+    api project(':common')
+    api project(':plattform')
+    general project(':implementation')
+    general project(':implementation2')
+}
+
+// Setup for specific subprojects
+project(':plattform') {
+    dependencies {
+        compile project(':common')
+    }
+}
+
+project(':implementation2') {
+    dependencies {
+        compile project(':common')
+        compile project(':plattform')
+    }
+}
+
+project(':implementation') {
+    dependencies {
+        compile project(':common')
+        compile project(':plattform')
+    }
+}

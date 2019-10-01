@@ -1,0 +1,2 @@
+rootProject.name = 'gradle-multiproject-test'
+include 'common', 'plattform', 'implementation', 'implementation2'
